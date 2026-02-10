@@ -1,0 +1,23 @@
+### Dodawanie nowego produktu do bazy
+POST http://localhost:8080/api/products/add
+Content-Type: application/json
+
+{
+  "name": "Ser twarogowy chudy",
+  "calories": 85.0,
+  "protein": 18.0,
+  "carbs": 3.5,
+  "fat": 0.5
+}
+
+### Pobieranie wszystkich zapisanych produktów
+GET http://localhost:8080/api/products/my-pantry
+
+### Usuń produkt z posiłku (podaj ID z tabeli MEAL_ITEM)
+DELETE http://localhost:8080/api/meals/items/1
+
+### Sprawdź, czy posiłek się zaktualizował i czy kalorie spadły
+GET http://localhost:8080/api/meals
+
+### Pobierz podsumowanie dzisiejszego dnia (cel: 2500 kcal)
+GET http://localhost:8080/api/meals/summary?goal=2500
