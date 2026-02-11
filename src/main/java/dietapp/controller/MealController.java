@@ -46,7 +46,12 @@ public class MealController {
 
     // Daily summary
     @GetMapping("/summary")
-    public DailySummary getSummary(@RequestParam(defaultValue = "2000") double goal) {
-        return mealService.getDailySummary(goal);
+    public DailySummary getSummary() {
+        return mealService.getDailySummary();
+    }
+
+    @PostMapping("/summary/goal")
+    public void updateGoal(@RequestParam double value) {
+        mealService.setUserGoal(value);
     }
 }

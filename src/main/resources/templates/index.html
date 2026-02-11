@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Moja Dieta</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-dark">
+
+<div class="container mt-5">
+    <h1 class="mb-4 text-primary">Diet builder</h1>
+
+    <div class="card shadow-sm mb-4 border-primary">
+        <div class="card-body">
+            <h5 class="card-title">1. Stwórz nowy posiłek</h5>
+            <form action="/add-meal" method="post" class="row g-3">
+                <div class="col-auto">
+                    <input type="text" name="name" class="form-control" placeholder="np. Śniadanie, Obiad..." required>
+                </div>
+                <div class="col-auto">
+                    <button type="submit" class="btn btn-primary">Stwórz posiłek</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card shadow-sm border-info">
+                <div class="card-body d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Mój dzienny cel: <span class="text-info" th:text="${summary.calorieGoal} + ' kcal'">2000 kcal</span></h5>
+                    <form action="/set-goal" method="post" class="d-flex gap-2">
+                        <input type="number" name="goal" class="form-control form-control-sm" style="width: 100px;" th:value="${summary.calorieGoal}">
+                        <button type="submit" class="btn btn-info btn-sm text-white">Ustaw cel</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card text-white bg-success mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">Kalorie dziś</h5>
+                    <p class="card-text fs-2" th:text="${summary.totalCalories + ' / ' + summary.calorieGoal + ' kcal'}">0 / 2000 kcal</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-8">
+            <div class="card bg-white p-3 shadow-sm">
+                <h5>Makroskładniki</h5>
+                <p>
+                    Białko: <strong th:text="${summary.totalProtein} + 'g'">0</strong> |
+                    Węgle: <strong th:text="${summary.totalCarbs} + 'g'">0</strong> |
+                    Tłuszcz: <strong th:text="${summary.totalFat} + 'g'">0</strong>
+                </p>
+                <div class="progress">
+                    <div class="progress-bar" role="progressbar"
+                         th:style="'width: ' + (${summary.totalCalories} / ${summary.calorieGoal} * 100) + '%'"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">Dzisiejsze Posiłki</h4>
+        </div>
+        <div class="card-body">
+            <div th:each="meal : ${meals}" class="mb-5 border-bottom pb-3">
+
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h5 th:text="${meal.name}" class="mb-0 text-secondary">Nazwa Posiłku</h5>
+                    <form th:action="@{'/delete-meal/' + ${meal.id}}" method="post">
+                        <button type="submit" class="btn btn-outline-danger btn-sm"
+                                onclick="return confirm('Czy na pewno chcesz usunąć cały posiłek?')">
+                            Usuń posiłek
+                        </button>
+                    </form>
+                </div>
+
+                <table class="table table-hover">
+                    <thead>
+                    <tr>
+                        <th>Produkt</th>
+                        <th>Waga</th>
+                        <th>Kcal</th>
+                        <th>Akcja</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="item : ${meal.items}">
+                        <td th:text="${item.product.name}">Jabłko</td>
+                        <td th:text="${item.weightInGrams} + 'g'">100g</td>
+                        <td th:text="${item.getCalculatedCalories()}">52</td>
+                        <td>
+                            <form th:action="@{'/delete-item/' + ${item.id}}" method="post">
+                                <button type="submit" class="btn btn-danger btn-sm">Usuń produkt</button>
+                            </form>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <form action="/" method="get" class="row g-3">
+                <div class="col-auto">
+                    <input type="text" name="query" class="form-control" placeholder="Wpisz nazwę produktu" required>
+                </div>
+                <div class="col-auto">
+                    <button type="submit" class="btn btn-primary">Szukaj</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div th:if="${searchResults}" class="card shadow-sm mb-4 border-warning">
+        <div class="card-header bg-warning text-dark">2. Wybierz produkt i dodaj do posiłku</div>
+        <div class="card-body">
+            <table class="table align-middle">
+                <thead>
+                <tr>
+                    <th>Nazwa</th>
+                    <th>Kcal/100g</th>
+                    <th>Waga (g)</th>
+                    <th>Dodaj do...</th>
+                    <th>Akcja</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="p : ${searchResults}">
+                    <td th:text="${p.name}">Produkt</td>
+                    <td th:text="${p.calories}">0</td>
+                    <form action="/add-to-meal" method="post">
+                        <input type="hidden" name="name" th:value="${p.name}">
+                        <input type="hidden" name="calories" th:value="${p.calories}">
+                        <input type="hidden" name="protein" th:value="${p.protein}">
+                        <input type="hidden" name="carbs" th:value="${p.carbs}">
+                        <input type="hidden" name="fat" th:value="${p.fat}">
+
+                        <td>
+                            <input type="number" name="weight" class="form-control form-control-sm" value="100" style="width: 80px;">
+                        </td>
+                        <td>
+                            <select name="mealId" class="form-select form-select-sm" required>
+                                <option value="" disabled selected>Wybierz posiłek</option>
+                                <option th:each="m : ${meals}" th:value="${m.id}" th:text="${m.name}"></option>
+                            </select>
+                        </td>
+                        <td>
+                            <button type="submit" class="btn btn-success btn-sm">Dodaj</button>
+                        </td>
+                    </form>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>

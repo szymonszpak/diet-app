@@ -20,10 +20,20 @@ public class MealService {
     private final ProductRepository productRepository;
     private final MealItemRepository mealItemRepository;
 
+    private double userGoal = 2000.0;
+
     public MealService(MealRepository mealRepository, ProductRepository productRepository, MealItemRepository mealItemRepository) {
         this.mealRepository = mealRepository;
         this.productRepository = productRepository;
         this.mealItemRepository = mealItemRepository;
+    }
+
+    public double getUserGoal() {
+        return userGoal;
+    }
+
+    public void setUserGoal(double userGoal) {
+        this.userGoal = userGoal;
     }
 
     public Meal createMeal(String name) {
@@ -53,7 +63,7 @@ public class MealService {
     }
 
     public List<Meal> getTodaysMeals() {
-        return mealRepository.findAll();
+        return mealRepository.findAllByDate(LocalDate.now());
     }
 
     @Transactional
@@ -64,7 +74,12 @@ public class MealService {
         mealItemRepository.deleteById(itemId);
     }
 
-    public DailySummary getDailySummary(double goal) {
+    @Transactional
+    public void deleteMeal(Long mealId) {
+        mealRepository.deleteById(mealId);
+    }
+
+    public DailySummary getDailySummary() {
         LocalDate today = LocalDate.now();
         List<Meal> todaysMeals = mealRepository.findAllByDate(today);
 
@@ -78,8 +93,8 @@ public class MealService {
                 totalProtein,
                 totalCarbs,
                 totalFat,
-                goal,
-                goal - totalKcal
+                userGoal,
+                userGoal - totalKcal
         );
     }
 }
