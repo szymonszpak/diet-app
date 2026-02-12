@@ -109,18 +109,73 @@
     <div class="card shadow-sm mb-4">
         <div class="card-body">
             <form action="/" method="get" class="row g-3">
-                <div class="col-auto">
-                    <input type="text" name="query" class="form-control" placeholder="Wpisz nazwę produktu" required>
+                <div class="col">
+                    <input type="text" name="localQuery" class="form-control"
+                           th:value="${lastSearch}" placeholder="Wpisz produkt...">
                 </div>
                 <div class="col-auto">
-                    <button type="submit" class="btn btn-primary">Szukaj</button>
+                    <button type="submit" class="btn btn-success">Szukaj w bazie</button>
                 </div>
             </form>
         </div>
     </div>
 
+    <div th:if="${localResults}" class="card shadow-sm mb-4 border-success">
+        <div class="card-header bg-success text-white">Produkty w Twojej bazie</div>
+        <div class="card-body">
+            <div th:if="${#lists.isEmpty(localResults)}" class="alert alert-light">
+                Nie znalazłeś tego u siebie? Spróbuj poszukać w internecie przyciskiem niżej.
+            </div>
+
+            <table th:if="${not #lists.isEmpty(localResults)}" class="table align-middle">
+                <thead>
+                <tr>
+                    <th>Nazwa</th>
+                    <th>Kcal/100g</th>
+                    <th>Waga (g)</th>
+                    <th>Dodaj do...</th>
+                    <th>Akcja</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="p : ${localResults}">
+                    <td th:text="${p.name}">Produkt</td>
+                    <td th:text="${p.calories}">0</td>
+                    <form action="/add-to-meal" method="post">
+                        <input type="hidden" name="id" th:value="${p.id}">
+                        <input type="hidden" name="name" th:value="${p.name}">
+                        <input type="hidden" name="calories" th:value="${p.calories}">
+                        <td>
+                            <input type="number" name="weight" class="form-control form-control-sm" value="100" style="width: 80px;">
+                        </td>
+                        <td>
+                            <select name="mealId" class="form-select form-select-sm" required>
+                                <option value="" disabled selected>Wybierz posiłek</option>
+                                <option th:each="m : ${meals}" th:value="${m.id}" th:text="${m.name}"></option>
+                            </select>
+                        </td>
+                        <td>
+                            <button type="submit" class="btn btn-success btn-sm">Dodaj</button>
+                        </td>
+                    </form>
+                </tr>
+                </tbody>
+            </table>
+
+            <div th:if="${showApiSearch}" class="text-center mt-3 border-top pt-3">
+                <p class="text-muted small">Nie ma tego na liście?</p>
+                <form action="/" method="get">
+                    <input type="hidden" name="apiQuery" th:value="${lastSearch}">
+                    <button type="submit" class="btn btn-outline-primary">
+                        🌐 Wyszukaj więcej w internecie
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <div th:if="${searchResults}" class="card shadow-sm mb-4 border-warning">
-        <div class="card-header bg-warning text-dark">2. Wybierz produkt i dodaj do posiłku</div>
+        <div class="card-header bg-warning text-dark">Wyniki z internetu (Open Food Facts)</div>
         <div class="card-body">
             <table class="table align-middle">
                 <thead>
@@ -142,7 +197,6 @@
                         <input type="hidden" name="protein" th:value="${p.protein}">
                         <input type="hidden" name="carbs" th:value="${p.carbs}">
                         <input type="hidden" name="fat" th:value="${p.fat}">
-
                         <td>
                             <input type="number" name="weight" class="form-control form-control-sm" value="100" style="width: 80px;">
                         </td>

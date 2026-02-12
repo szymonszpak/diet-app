@@ -56,13 +56,24 @@ public class MainViewController {
     }
 
     @GetMapping("/")
-    public String index(@RequestParam(required = false) String query, Model model){
+    public String index(
+            @RequestParam(required = false) String localQuery,
+            @RequestParam(required = false) String apiQuery,
+            Model model){
         model.addAttribute("summary", mealService.getDailySummary());
         model.addAttribute("meals", mealService.getTodaysMeals());
 
-        if (query != null && !query.isEmpty()) {
-            List<Product> results = productApiService.searchProductsByName(query);
+        if (localQuery != null && !localQuery.isEmpty()) {
+            List<Product> localResults = productRepository.findByNameContainingIgnoreCase(localQuery);
+            model.addAttribute("localResults", localResults);
+            model.addAttribute("lastSearch", localQuery);
+            model.addAttribute("showApiSearch", true);
+        }
+
+        if (apiQuery != null && !apiQuery.isEmpty()){
+            List<Product> results = productApiService.searchProductsByName(apiQuery);
             model.addAttribute("searchResults", results);
+            model.addAttribute("lastSearch", apiQuery);
         }
 
         return "index";
