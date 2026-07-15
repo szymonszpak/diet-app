@@ -37,3 +37,6 @@ build/
 
 # Local database
 /data/
+
+frontend/node_modules/
+frontend/.next/

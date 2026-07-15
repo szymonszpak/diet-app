@@ -21,6 +21,10 @@ public class ProductController {
 
     @GetMapping("/search")
     public List<Product> search(@RequestParam String name) {
+        List<Product> localProducts = productRepository.findByNameContainingIgnoreCase(name);
+        if(!localProducts.isEmpty()){
+            return localProducts;
+        }
         return apiService.searchProductsByName(name);
     }
 
